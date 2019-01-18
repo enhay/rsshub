@@ -173,7 +173,7 @@ RSSHub 提供下列 API 接口:
 
 ### bilibili
 
-<route name="番剧" author="DIYgod" example="/bilibili/bangumi/21680" path="/bilibili/bangumi/:seasonid" :paramsDesc="['番剧 id, 番剧主页打开控制台执行 `window.__INITIAL_STATE__.ssId` 或 `window.__INITIAL_STATE__.mediaInfo.param.season_id` 获取']"/>
+<route name="番剧" author="DIYgod" example="/bilibili/bangumi/media/9192" path="/bilibili/bangumi/media/:mediaid" :paramsDesc="['番剧媒体 id, 番剧主页 URL 中获取']"/>
 
 <route name="UP 主投稿" author="DIYgod" example="/bilibili/user/video/2267573" path="/bilibili/user/video/:uid" :paramsDesc="['用户 id, 可在 UP 主主页中找到']"/>
 
@@ -2361,6 +2361,10 @@ Example: `https://store.steampowered.com/search/?specials=1&term=atelier` 中的
 
 </route>
 
+### All Poetry
+
+<route name="Poems" author="HenryQW" example="/allpoetry/newest" path="/allpoetry/:order?" :paramsDesc="['排序方式, `best` 或 `newest`, 缺省 `best`']"/>
+
 ## 中国驻外使领馆
 
 ### 大使馆
@@ -2792,3 +2796,7 @@ board 和 build 可在[这里](http://api.ineal.me/tss/status)查看
 ### 好奇心日报
 
 <route name="最新" author="suprio" example="/qdaily" path="/qdaily/index" />
+
+### 多抓鱼
+
+<route name="搜索结果" author="fengkx" example="/duozhuayu/search/JavaScript" path="/duozhuayu/search/:wd" :paramsDesc="['搜索关键词']"/>
