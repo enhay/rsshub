@@ -45,7 +45,7 @@ const genHtml = async (wd, urls) => {
     if (!urls || !urls.length || !wd) {
         return;
     }
-    const wdPath = path.resolve('../html', wd);
+    const wdPath = path.resolve(__dirname, '../html', wd);
     await checkDir(wdPath);
     const fileNames = await readdir(wdPath);
     const domain = 'https://mp.weixin.qq.com';
@@ -88,7 +88,7 @@ const genBill = async (wd, urls, cnTitle) => {
             link: `http://${ip}:8080/${wd}/${i.md5Title}.html`,
         });
     });
-    const wdPath = path.resolve('../html', wd);
+    const wdPath = path.resolve(__dirname, '../html', wd);
     await writeFile(path.resolve(wdPath, 'bill.json'), JSON.stringify(centent), {
         flag: 'w',
     });
@@ -116,7 +116,7 @@ const fn = async (wd) => {
     // eslint-disable-next-line no-undef
     await Promise.all([
         page.waitForNavigation({
-            waitUntil: 'load',
+            waitUntil: 'networkidle0',
         }),
         page.click('#sogou_vr_11002301_box_0 > div > div.txt-box > p.tit > a'),
     ]);
@@ -128,6 +128,7 @@ const fn = async (wd) => {
             output: process.stdout,
         });
         const screenshotPath = path.resolve(__dirname, '../html/screenshot_');
+        await checkDir(screenshotPath);
         const screenshotFile = `${wd}_${Date.now()}st.png`;
         await page.screenshot({
             path: path.resolve(screenshotPath, screenshotFile),
