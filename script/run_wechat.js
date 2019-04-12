@@ -7,6 +7,11 @@ const logger = require('../lib/utils/logger');
 
 const readFile = util.promisify(fs.readFile);
 
+const sleep = (num) =>
+    new Promise((r) => {
+        setTimeout(r, num);
+    });
+
 (async () => {
     let sList = '';
     try {
@@ -33,4 +38,5 @@ const readFile = util.promisify(fs.readFile);
             }
         }
     }
+    await sleep(5000);
 })();
