@@ -8,7 +8,13 @@ const _ = require('lodash');
 const puppeteer = require('../lib/utils/puppeteer');
 const axios = require('../lib/utils/axios');
 const md5 = require('../lib/utils/md5');
-const logger = require('../lib/utils/logger');
+
+const logger = {};
+logger.info = (...arg) => {
+    console.log.apply(console, [...arg, Date()]);
+};
+logger.error = logger.info;
+logger.warning = logger.info;
 
 const access = util.promisify(fs.access);
 const writeFile = util.promisify(fs.writeFile);
@@ -41,7 +47,7 @@ const checkDir = async (wdPath) => {
     }
 };
 
-const genHtml = async (wd, urls) => {
+const genHtml = async (wd, urls, cnTitle) => {
     if (!urls || !urls.length || !wd) {
         return;
     }
@@ -57,7 +63,9 @@ const genHtml = async (wd, urls) => {
                 return;
             }
             try {
-                let { data } = await axios({
+                let {
+                    data
+                } = await axios({
                     method: 'get',
                     url: domain + item.hrefs,
                 });
@@ -71,6 +79,7 @@ const genHtml = async (wd, urls) => {
         })()
     );
     await Promise.all(pros);
+    await genBill(wd, urls, cnTitle);
 };
 
 const genBill = async (wd, urls, cnTitle) => {
@@ -104,7 +113,7 @@ const fn = async (wd) => {
     await page.type('#query', wd);
     await Promise.all([
         page.waitForNavigation({
-            waitUntil: 'load',
+            waitUntil: 'networkidle0',
         }),
         page.click('#searchForm > div > input.swz2'),
     ]);
@@ -142,17 +151,34 @@ const fn = async (wd) => {
                 r(answer);
             });
         });
-        await page.type('#input', as);
-        await Promise.all([
-            page.waitForNavigation({
-                waitUntil: 'load',
-            }),
-            page.click('#bt'),
-        ]);
-        const html1 = await page.evaluate(() => document.querySelector('body').innerHTML);
+        logger.info('验证码接受到', as);
+        if ($('#input').length) {
+            await page.type('#input', as);
+            await Promise.all([
+                page.waitForNavigation({
+                    waitUntil: 'networkidle0',
+                }),
+                page.click('#bt'),
+            ]);
+        } else if ($('#seccodeInput').length) {
+            await page.type('#seccodeInput', as);
+            await Promise.all([
+                page.waitForNavigation({
+                    waitUntil: 'networkidle0',
+                }),
+                page.click('#submit'),
+            ]);
+        } else {
+            logger.info('没有找到输入框');
+            logger.log(html);
+            await browser.close();
+            return;
+        }
+        logger.info('验证码跳转完成');
+        const html1 = await page.evaluate(() => document.querySelector('html').innerHTML);
         $ = cheerio.load(html1);
     }
-    browser.close();
+    await browser.close();
     const urls = [];
     $('.weui_media_title').each((index, ele) => {
         const $ele = $(ele);
@@ -165,9 +191,13 @@ const fn = async (wd) => {
             title,
         });
     });
-    await genHtml(wd, urls);
-    await genBill(wd, urls, cnTitle);
-    console.log('success');
+    if (!urls.length) {
+        logger.error('urls是空');
+        logger.error($('body').html());
+        return;
+    }
+    await genHtml(wd, urls, cnTitle);
+    logger.info('success');
 };
 
 module.exports = fn;

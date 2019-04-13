@@ -3,7 +3,13 @@ const util = require('util');
 const path = require('path');
 const _ = require('lodash');
 const wechat = require('./wechat');
-const logger = require('../lib/utils/logger');
+
+const logger = {};
+logger.info = (...arg) => {
+    console.log.apply(console, [...arg, Date()]);
+};
+logger.error = logger.info;
+logger.warning = logger.info;
 
 const readFile = util.promisify(fs.readFile);
 
