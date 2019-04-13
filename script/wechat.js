@@ -63,9 +63,7 @@ const genHtml = async (wd, urls, cnTitle) => {
                 return;
             }
             try {
-                let {
-                    data
-                } = await axios({
+                let { data } = await axios({
                     method: 'get',
                     url: domain + item.hrefs,
                 });
@@ -106,6 +104,19 @@ const genBill = async (wd, urls, cnTitle) => {
 const fn = async (wd) => {
     const link = 'https://weixin.sogou.com/';
     const browser = await puppeteer();
+    setTimeout(() => {
+        logger.error('等待时间过长，自动退出');
+        browser
+            .close()
+            .then(() => {
+                process.exit(1);
+            })
+            .catch((err) => {
+                logger.error('浏览器退出失败', err);
+                process.exit(1);
+            });
+        // 10分钟强制退出
+    }, 10 * 60 * 1000);
     const page = await browser.newPage();
     await page.goto(link, {
         waitUntil: 'domcontentloaded',
