@@ -45,4 +45,5 @@ const sleep = (num) =>
         }
     }
     await sleep(5000);
+    process.exit(0);
 })();
