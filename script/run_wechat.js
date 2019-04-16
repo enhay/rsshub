@@ -27,7 +27,10 @@ const sleep = (num) =>
         return;
     }
     sList = _.trim(sList);
-    const originList = _.uniq(sList.split(','));
+    const keywordsArr = sList.split(',').map((item) => {
+        return _.trim(item);
+    });
+    const originList = _.uniq(keywordsArr);
     const list = _.chunk(originList, parseInt(originList.length / 24, 10) + 1);
     const hours = new Date().getHours();
     const wds = list[hours];
