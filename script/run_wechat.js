@@ -31,21 +31,24 @@ const sleep = (num) =>
         return _.trim(item);
     });
     const originList = _.uniq(keywordsArr);
-    const list = _.chunk(originList, parseInt(originList.length / 24, 10) + 1);
+    // const list = _.chunk(originList, parseInt(originList.length / 24, 10) + 1);
+    const list = originList;
     const hours = new Date().getHours();
-    const wds = list[hours];
-    logger.info(`run_wechat.js hours=${hours} ${JSON.stringify(wds)}`);
+    const index = hours / 2;
+    const wds = list[parseInt(index, 10)];
+    logger.info(`run_wechat.js hours=${hours} index=${index} ${JSON.stringify(wds)}`);
     if (wds) {
-        for (let i = 0; i < wds.length; i++) {
-            if (wds[i]) {
+        // for (let i = 0; i < wds.length; i++) {
+        //     if (wds[i]) {
                 try {
                     /* eslint-disable no-await-in-loop */
-                    await wechat(wds[i]);
+                    // await wechat(wds[i]);
+                    await wechat(wds);
                 } catch (err) {
                     logger.error(`run_wechat.js ${err.stack}`);
                 }
-            }
-        }
+            // }
+        // }
     }
     await sleep(5000);
     process.exit(0);
