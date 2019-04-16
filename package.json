@@ -44,10 +44,12 @@
     "yorkie": "2.0.0"
   },
   "dependencies": {
+    "@types/bluebird": "^3.5.26",
     "@types/moment": "^2.13.0",
     "art-template": "4.13.2",
     "axios": "0.18.0",
     "axios-retry": "3.1.1",
+    "bluebird": "^3.5.4",
     "cheerio": "1.0.0-rc.2",
     "co-redis": "2.1.1",
     "currency-symbol-map": "^4.0.4",
