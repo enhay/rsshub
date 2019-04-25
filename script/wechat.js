@@ -9,13 +9,15 @@ const puppeteer = require('../lib/utils/puppeteer');
 const axios = require('../lib/utils/axios');
 const md5 = require('../lib/utils/md5');
 const db = require('./wechat_db');
+const loggerx = require('../lib/utils/logger');
 
 const logger = {};
-logger.info = (...arg) => {
-    console.log.apply(console, [...arg, Date()]);
+logger.info = (arg) => {
+    loggerx.info('wechatRuntime ' + arg);
 };
-logger.error = logger.info;
-logger.warning = logger.info;
+logger.error = (arg) => {
+    loggerx.error('wechatRuntime ' + arg);
+};
 
 const access = util.promisify(fs.access);
 const writeFile = util.promisify(fs.writeFile);
@@ -109,12 +111,8 @@ const fn = async (wd) => {
         logger.error('等待时间过长，自动退出');
         browser
             .close()
-            .then(() => {
-                process.exit(1);
-            })
             .catch((err) => {
-                logger.error('浏览器退出失败', err);
-                process.exit(1);
+                logger.error('浏览器退出失败' + err.stack);
             });
         // 10分钟强制退出
     }, 10 * 60 * 1000);
@@ -172,7 +170,7 @@ const fn = async (wd) => {
                 r(answer);
             });
         });
-        logger.info('验证码接受到', as);
+        logger.info('验证码接受到: ' + as);
         if ($('#input').length) {
             await page.type('#input', as);
             await Promise.all([
@@ -191,7 +189,7 @@ const fn = async (wd) => {
             ]);
         } else {
             logger.info('没有找到输入框');
-            logger.log(html);
+            logger.info(html);
             await browser.close();
             return;
         }

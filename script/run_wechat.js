@@ -1,20 +1,9 @@
 const _ = require('lodash');
 const wechat = require('./wechat');
 const db = require('./wechat_db');
+const logger = require('../lib/utils/logger');
 
-const logger = {};
-logger.info = (...arg) => {
-    console.log.apply(console, [...arg, Date()]);
-};
-logger.error = logger.info;
-logger.warning = logger.info;
-
-const sleep = (num) =>
-    new Promise((r) => {
-        setTimeout(r, num);
-    });
-
-(async () => {
+const fn = async () => {
     const hasVerify = db.get('hasVerify').value();
     if (hasVerify) {
         logger.error(`run_wechat.js hasVerify`);
@@ -35,6 +24,14 @@ const sleep = (num) =>
             }
         }
     }
-    await sleep(5000);
-    process.exit(0);
-})();
+};
+
+let startTime = new Date().getHours();
+setInterval(() => {
+    logger.info(`run_wechat.js start interval`);
+    const hours = new Date().getHours();
+    if (hours % 2 === 0 && hours !== startTime) {
+        startTime = hours;
+        fn()
+    }
+}, 60 * 60 * 1000);
