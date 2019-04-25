@@ -7,7 +7,8 @@ const db = low(adapter)
 
 db.defaults({
     wdList: [],
-    current: 0
+    current: 0,
+    hasVerify: false
 }).write();
 
 module.exports = db;

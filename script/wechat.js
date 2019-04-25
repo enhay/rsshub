@@ -8,6 +8,7 @@ const _ = require('lodash');
 const puppeteer = require('../lib/utils/puppeteer');
 const axios = require('../lib/utils/axios');
 const md5 = require('../lib/utils/md5');
+const db = require('./wechat_db');
 
 const logger = {};
 logger.info = (...arg) => {
@@ -151,6 +152,7 @@ const fn = async (wd) => {
     const html = await page.evaluate(() => document.querySelector('body').innerHTML);
     let $ = cheerio.load(html);
     if (!$('#history').length) {
+        db.set('hasVerify', true).write();
         const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout,
@@ -194,6 +196,7 @@ const fn = async (wd) => {
             return;
         }
         logger.info('验证码跳转完成');
+        db.set('hasVerify', false).write();
         const html1 = await page.evaluate(() => document.querySelector('html').innerHTML);
         $ = cheerio.load(html1);
     }
