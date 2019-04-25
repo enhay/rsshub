@@ -8,7 +8,8 @@ const db = low(adapter)
 db.defaults({
     wdList: [],
     current: 0,
-    hasVerify: false
+    hasVerify: false,
+    wdStatistics: {}
 }).write();
 
 module.exports = db;
