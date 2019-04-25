@@ -129,10 +129,18 @@ const fn = async (wd) => {
         page.click('#searchForm > div > input.swz2'),
     ]);
     const cnTitle = await page.evaluate(() => {
+        if (document.querySelector('.b404-box')) {
+            return '';
+        }
         // 强制在当前tab里跳转，否则还需要切换tab
         document.querySelector('#sogou_vr_11002301_box_0 > div > div.txt-box > p.tit > a').target = '';
         return document.querySelector('#sogou_vr_11002301_box_0 > div > div.txt-box > p.tit > a').textContent;
     });
+    if (!cnTitle) {
+        logger.error(`${wd}没有这个公众号`);
+        await browser.close();
+        return;
+    }
     // eslint-disable-next-line no-undef
     await Promise.all([
         page.waitForNavigation({

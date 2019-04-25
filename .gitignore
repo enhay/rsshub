@@ -15,3 +15,4 @@ tmp
 *.iml
 coverage
 html/
+script/db.json
