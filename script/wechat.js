@@ -112,11 +112,12 @@ const fn = async (wd) => {
     const link = 'https://weixin.sogou.com/';
     const browser = await puppeteer();
     logger.info('----- opened browser');
-    const timer = setTimeout(() => {
-        throw new Error('等待时间过长，自动退出');
-        // 10分钟强制退出
-    }, 10 * 60 * 1000);
+    let timer;
     try {
+        timer = setTimeout(() => {
+            throw new Error('等待时间过长，自动退出');
+            // 10分钟强制退出
+        }, 10 * 60 * 1000);
         const page = await browser.newPage();
         await page.goto(link, {
             waitUntil: 'domcontentloaded',
@@ -193,7 +194,7 @@ const fn = async (wd) => {
                 return;
             }
             logger.info('验证码跳转完成');
-            db.set('hasVerify', false).write();
+           // db.set('hasVerify', false).write();
             const html1 = await page.evaluate(() => document.querySelector('html').innerHTML);
             $ = cheerio.load(html1);
         }

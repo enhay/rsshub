@@ -9,7 +9,8 @@ db.defaults({
     wdList: [],
     current: 0,
     hasVerify: false,
-    wdStatistics: {}
+    wdStatistics: {},
+    currentHours: -1
 }).write();
 
 module.exports = db;
