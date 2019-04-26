@@ -1,5 +1,5 @@
 const wechat = require('./wechat');
 
 (async () => {
-    await wechat('niduDJ');
+    await wechat('xinlang-xinwen');
 })();

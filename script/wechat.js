@@ -108,16 +108,61 @@ const genBill = async (wd, urls, cnTitle) => {
     });
 };
 
+
+const yanzhengma = async (page) => {
+    db.set('hasVerify', true).write();
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
+    const screenshotPath = path.resolve(__dirname, '../html/screenshot_');
+    await checkDir(screenshotPath);
+    const screenshotFile = `${wd}_${Date.now()}st.png`;
+    await page.screenshot({
+        path: path.resolve(screenshotPath, screenshotFile),
+        fullPage: true,
+    });
+    logger.info(`验证码: http://${ip}:8080/screenshot_/${screenshotFile}`);
+    if (process.env.pmx) {
+        throw new Error('验证码出现');
+    }
+    const as = await new Promise((r) => {
+        rl.question('请输入验证码:', (answer) => {
+            rl.close();
+            r(answer);
+        });
+    });
+    logger.info('验证码接受到: ' + as);
+    if ($('#input').length) {
+        await page.type('#input', as);
+        await Promise.all([
+            page.waitForNavigation({
+                waitUntil: 'networkidle0',
+            }),
+            page.click('#bt'),
+        ]);
+    } else if ($('#seccodeInput').length) {
+        await page.type('#seccodeInput', as);
+        await Promise.all([
+            page.waitForNavigation({
+                waitUntil: 'networkidle0',
+            }),
+            page.click('#submit'),
+        ]);
+    } else {
+        logger.info('没有找到输入框');
+        logger.info(html);
+        throw new Error('验证码html没有找到输入框');
+    }
+    logger.info('验证码跳转完成');
+    // db.set('hasVerify', false).write();
+};
+
 const fn = async (wd) => {
     const link = 'https://weixin.sogou.com/';
     const browser = await puppeteer();
     logger.info('----- opened browser');
-    let timer;
     try {
-        timer = setTimeout(() => {
-            throw new Error('等待时间过长，自动退出');
-            // 10分钟强制退出
-        }, 10 * 60 * 1000);
         const page = await browser.newPage();
         await page.goto(link, {
             waitUntil: 'domcontentloaded',
@@ -129,20 +174,21 @@ const fn = async (wd) => {
             }),
             page.click('#searchForm > div > input.swz2'),
         ]);
+        const searchHtml = await page.evaluate(() => document.querySelector('body').innerHTML);
+        let $search = cheerio.load(searchHtml);
+        if ($search('.b404-box').length) {
+            logger.error(`${wd}没有这个公众号`);
+            return;
+        }
+        if (!$search('#sogou_vr_11002301_box_0 > div > div.txt-box > p.tit > a').length) {
+            await yanzhengma(page);
+        }
         const cnTitle = await page.evaluate(() => {
-            if (document.querySelector('.b404-box')) {
-                return '';
-            }
             // 强制在当前tab里跳转，否则还需要切换tab
             document.querySelector('#sogou_vr_11002301_box_0 > div > div.txt-box > p.tit > a').target = '';
             return document.querySelector('#sogou_vr_11002301_box_0 > div > div.txt-box > p.tit > a').textContent;
         });
-        if (!cnTitle) {
-            logger.error(`${wd}没有这个公众号`);
-            return;
-        }
-        logger.info('----- 搜到到');
-        // eslint-disable-next-line no-undef
+        logger.info('----- 搜到');
         await Promise.all([
             page.waitForNavigation({
                 waitUntil: 'networkidle0',
@@ -152,49 +198,7 @@ const fn = async (wd) => {
         const html = await page.evaluate(() => document.querySelector('body').innerHTML);
         let $ = cheerio.load(html);
         if (!$('#history').length) {
-            db.set('hasVerify', true).write();
-            const rl = readline.createInterface({
-                input: process.stdin,
-                output: process.stdout,
-            });
-            const screenshotPath = path.resolve(__dirname, '../html/screenshot_');
-            await checkDir(screenshotPath);
-            const screenshotFile = `${wd}_${Date.now()}st.png`;
-            await page.screenshot({
-                path: path.resolve(screenshotPath, screenshotFile),
-                fullPage: true,
-            });
-            logger.info(`验证码: http://${ip}:8080/screenshot_/${screenshotFile}`);
-            const as = await new Promise((r) => {
-                rl.question('请输入验证码:', (answer) => {
-                    rl.close();
-                    r(answer);
-                });
-            });
-            logger.info('验证码接受到: ' + as);
-            if ($('#input').length) {
-                await page.type('#input', as);
-                await Promise.all([
-                    page.waitForNavigation({
-                        waitUntil: 'networkidle0',
-                    }),
-                    page.click('#bt'),
-                ]);
-            } else if ($('#seccodeInput').length) {
-                await page.type('#seccodeInput', as);
-                await Promise.all([
-                    page.waitForNavigation({
-                        waitUntil: 'networkidle0',
-                    }),
-                    page.click('#submit'),
-                ]);
-            } else {
-                logger.info('没有找到输入框');
-                logger.info(html);
-                return;
-            }
-            logger.info('验证码跳转完成');
-           // db.set('hasVerify', false).write();
+            await yanzhengma(page);
             const html1 = await page.evaluate(() => document.querySelector('html').innerHTML);
             $ = cheerio.load(html1);
         }
@@ -221,7 +225,6 @@ const fn = async (wd) => {
     } catch (error) {
         throw error;
     } finally {
-        clearTimeout(timer);
         await browser.close();
         logger.info('browser closed');
     }
