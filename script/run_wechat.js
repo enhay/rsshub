@@ -1,13 +1,14 @@
 const wechat = require('./wechat');
 const db = require('./wechat_db');
 const logger = require('../lib/utils/logger');
+const runTimer = require('./timer');
 
-const fn = async () => {
+const runWechat = async () => {
     logger.info(`wechatRuntime start from interval`);
     const prevHours = db.get('currentHours').value();
     const hours = new Date().getHours();
     if (hours % 2 !== 0 || parseInt(hours, 10) === parseInt(prevHours, 10)) {
-        logger.info(`no correct time now=${hours} prev=${prevHours}`);
+        logger.info(`wechatRuntime not correct time now=${hours} prev=${prevHours}`);
         return;
     }
     db.set('currentHours', hours).write();
@@ -34,5 +35,5 @@ const fn = async () => {
 };
 
 db.set('hasVerify', false).write();
-fn();
-setInterval(fn, 60 * 60 * 1000);
+runWechat();
+runTimer.push(runWechat);
