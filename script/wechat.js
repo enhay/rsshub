@@ -109,7 +109,7 @@ const genBill = async (wd, urls, cnTitle) => {
 };
 
 
-const yanzhengma = async (page) => {
+const yanzhengma = async (page, wd, $) => {
     db.set('hasVerify', true).write();
     const rl = readline.createInterface({
         input: process.stdin,
@@ -181,7 +181,7 @@ const fn = async (wd) => {
             return;
         }
         if (!$search('#sogou_vr_11002301_box_0 > div > div.txt-box > p.tit > a').length) {
-            await yanzhengma(page);
+            await yanzhengma(page, wd, $search);
         }
         const cnTitle = await page.evaluate(() => {
             // 强制在当前tab里跳转，否则还需要切换tab
@@ -198,7 +198,7 @@ const fn = async (wd) => {
         const html = await page.evaluate(() => document.querySelector('body').innerHTML);
         let $ = cheerio.load(html);
         if (!$('#history').length) {
-            await yanzhengma(page);
+            await yanzhengma(page, wd, $);
             const html1 = await page.evaluate(() => document.querySelector('html').innerHTML);
             $ = cheerio.load(html1);
         }
